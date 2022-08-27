@@ -1,0 +1,193 @@
+body {
+    margin: 0;
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";;
+}
+
+.header {
+    flex-direction: column;
+    align-items: center;
+    justify-content: normal !important;
+    color: white;
+    width: 100%;
+    height: 50px;
+    display: block;
+    z-index: 1000;
+    background-color: rgb(44, 44, 59);
+}
+
+.content {
+    padding: 10px;
+    color: #fff;
+    position: relative !important;
+    flex-wrap: nowrap !important;
+    display: flex !important;
+    height: calc(100vh - 50px - 50px) !important;
+    overflow: hidden !important;
+    background-color: rgb(29, 29, 38);
+}
+
+.footer {
+    color: #fff;
+    background-color: rgb(44, 44, 59);
+    font-size: 12px;
+    height: 50px;
+    justify-content: center;
+    align-items: center !important;
+    display: flex !important;
+}
+
+.header-logo {
+    height: 40px;
+}
+
+.header-logo-text {
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    /*align-items: center;*/
+    text-align: center;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.header-logo-text-content {
+    font-size: 12px;
+}
+
+.header-content-1 {
+    border: none;
+    border-radius: 0;
+    -webkit-box-align: stretch !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    top: 0;
+    left: 0;
+    z-index: 11;
+    display: flex;
+    padding: 5px 5px 5px 5px;
+}
+
+.header-left-div {
+    -webkit-box-align: stretch !important;
+    align-items: stretch !important;
+    -webkit-box-pack: start !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    -webkit-box-flex: 1 !important;
+    flex-grow: 1 !important;
+    flex-shrink: 2 !important;
+    width: 100% !important;
+    display: flex !important;
+}
+
+.header-center-div {
+    align-items: center !important;
+    -webkit-box-pack: center !important;
+    justify-content: center !important;
+    -webkit-box-flex: 2 !important;
+    flex-grow: 2 !important;
+    flex-shrink: 1 !important;
+    width: 100% !important;
+    -webkit-box-align: center !important;
+    max-width: 340px;
+    position: relative;
+}
+
+.header-right-div{
+    -webkit-box-flex: 1 !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    -webkit-box-align: center !important;
+    align-items: center !important;
+    -webkit-box-pack: end !important;
+    justify-content: flex-end !important;
+    flex-shrink: 2 !important;
+    width: 100% !important;
+}
+
+.content-body {
+    padding: 10px;
+    width: 100%;
+}
+
+.content-body-register-select {
+    margin: 20px 0 0 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.content-body-context-1 {
+    margin: 50px 0;
+    display: flex;
+    flex-direction: row;
+}
+.content-body-context-2 {
+    margin: 50px 0 100px 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.dp-input-1 {
+    height: 35px;
+    margin-bottom: 20px;
+}
+
+.dp-button {
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.dp-log-div {
+    display: flex;
+}
+
+.dp-log {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+    overflow: auto;
+    padding-bottom: 20px;
+    width: 100%;
+}
+
+.dp-loader-div {
+    margin-left: 50px;
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 222s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.dp-loader {
+    border: 20px solid #f3f3f3; /* Light grey */
+    border-top: 20px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+}
+
+.span-log {
+    text-overflow: ellipsis;
+    white-space:nowrap;
+}
+
+.dp-select-button {
+    box-shadow: 4px 4px 4px 2px #3498db!important;
+}
+
+.dp-no_select {
+    cursor: not-allowed!important;
+}
+

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Miuul Cognito App</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <script src="./script/aws-sdk-2.487.0.min.js"></script>
+    <script src="./script/aws-cognito-sdk.min.js"></script>
+    <script src="./script/amazon-cognito-identity.min.js"></script>
+    <link rel="icon" href="https://miuul.com/image/theme/favicon.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="css/dp.css">
+
+</head>
+<body>
+<div id="dp">
+    <div class="header">
+        <div class="header-content-1">
+            <div class="header-left-div">
+                <img class="header-logo" src='img/logo-white.png' alt=""/>
+                <div class="header-logo-text">
+                    <span class="header-logo-text-content">
+                        Cognito App
+                    </span>
+                    <span class="header-logo-text-content">
+                         Ver: 1.3
+                    </span>
+                </div>
+            </div>
+            <div class="header-center-div">
+            </div>
+            <div class="header-right-div">
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="content-body">
+            <div class="content-body-register-select">
+                <div>
+                    <button class="btn btn-light dp-button" id="emailRegisterButtonSelect" onclick="EmailRegister()">Email Register</button>
+                    <button class="btn btn-light dp-button" id="phoneRegisterButtonSelect" onclick="PhoneRegister()">Phone Register</button>
+                </div>
+
+            </div>
+            <div class="content-body-context-1">
+                <div>
+                    <input class="form-control dp-input-1" id="userNameInput" type="text" placeholder="Username"/>
+                    <input class="form-control dp-input-1" id="emailInput" type="text" placeholder="Email" style="display:none"/>
+                    <input class="form-control dp-input-1" id="userPhoneInput" type="text" placeholder="Phone"/>
+                    <input class="form-control dp-input-1" id="passwordInput" type="password" placeholder="Password"/>
+                    <input class="form-control dp-input-1" id="confirmPasswordInput" type="password" placeholder="Confirm Password" style="display:none"/>
+                    <input class="form-control dp-input-1" id="verificationCodeInput" type="text" placeholder="Verification Code" style="display:none"/>
+                    <input class="form-control dp-input-1" id="bucketNameInput" type="text" placeholder="S3 Bucket Name" style="display:none"/>
+                </div>
+                <div class="dp-loader-div">
+                    <div id="loader" class="loader dp-loader" style="display:none"></div>
+                </div>
+            </div>
+
+            <div class="content-body-context-2">
+                <div>
+                    <button class="btn btn-light dp-button" id="logInButton" onclick="logIn()">Log In</button>
+                    <button class="btn btn-light dp-button" id="registerButton" onclick="register()">Register</button>
+                    <button class="btn btn-light dp-button" id="logOutButton" onclick="logOut()" style="display:none">Log Out</button>
+                    <button class="btn btn-light dp-button" id="verifyCodeButton" onclick="verifyCode()" style="display:none">Verify</button>
+                    <button class="btn btn-light dp-button" id="listS3ObjectsButton" onclick="listS3Objects()" style="display:none">List S3 Objects</button>
+                    <button class="btn btn-light dp-button" id="clearLogsButton" onclick="clearLogs()">Clear Logs</button>
+                    <button class="btn btn-light dp-button" id="backToLoginButton" onclick="backToLoginButton()">Back to Login</button>
+                    <button class="btn btn-light dp-button" id="backToRegisterButton" onclick="backToRegisterButton()">Back to Register</button>
+                </div>
+
+            </div>
+            <div class="dp-log-div">
+                <div id="log" class="dp-log"></div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="footer">
+        <span id="date"></span>
+    </div>
+
+</div>
+
+</body>
+
+<script>
+
+    let register_type_messages = 'Email';
+
+    //=============== AWS IDs ===============
+    let userPoolId = 'eu-central-1_SMvyoBzMg';
+    let clientId = '1766lndbi9gbmic0sj6f546i';
+    let region = 'eu-central-1';
+    let identityPoolId = 'eu-central-1:b54182d2-f981-43ab-8e72-7881ced24a67';
+    //=============== AWS IDs ===============
+
+    let cognitoUser;
+    let idToken;
+    let userPool;
+
+    let poolData = {
+        UserPoolId: userPoolId,
+        ClientId: clientId
+    };
+
+    getCurrentLoggedInSession();
+
+    function EmailRegister() {
+        $("#backToRegisterButton").hide();
+        $("#emailInput").show();
+        $("#userNameInput").show();
+        $("#userPhoneInput").hide();
+        $("#passwordInput").show();
+        $("#confirmPasswordInput").show();
+        $("#logInButton").hide();
+        $("#registerButton").show();
+        $("#bucketNameInput").hide();
+        $("#verificationCodeInput").hide();
+        $("#verifyCodeButton").hide();
+        $("#listS3ObjectsButton").hide();
+        $("#logOutButton").hide();
+        $("#backToLoginButton").show();
+        register_type_messages = 'Email'
+
+        $("#emailRegisterButtonSelect").removeClass('dp-select-button').addClass('dp-select-button');
+        $("#phoneRegisterButtonSelect").removeClass('dp-select-button')
+    }
+
+    function PhoneRegister() {
+        $("#backToRegisterButton").hide();
+        $("#emailInput").hide();
+        $("#userNameInput").show();
+        $("#userPhoneInput").show();
+        $("#passwordInput").show();
+        $("#confirmPasswordInput").show();
+        $("#logInButton").hide();
+        $("#registerButton").show();
+        $("#bucketNameInput").hide();
+        $("#verificationCodeInput").hide();
+        $("#verifyCodeButton").hide();
+        $("#listS3ObjectsButton").hide();
+        $("#logOutButton").hide();
+        $("#backToLoginButton").show();
+        register_type_messages = 'Phone'
+
+        $("#phoneRegisterButtonSelect").removeClass('dp-select-button').addClass('dp-select-button');
+        $("#emailRegisterButtonSelect").removeClass('dp-select-button')
+    }
+
+    function switchToVerificationCodeView() {
+        $("#emailInput").hide();
+        $("#userNameInput").hide();
+        $("#passwordInput").hide();
+        $("#confirmPasswordInput").hide();
+        $("#logInButton").hide();
+        $("#registerButton").hide();
+        $("#bucketNameInput").hide();
+        $("#verificationCodeInput").show();
+        $("#verifyCodeButton").show();
+        $("#listS3ObjectsButton").hide();
+        $("#logOutButton").hide();
+        $("#userPhoneInput").hide();
+    }
+
+    function switchToRegisterView() {
+        $("#emailRegisterButtonSelect").show();
+        $("#phoneRegisterButtonSelect").show();
+        if (register_type_messages === 'Email') {
+            EmailRegister();
+
+        } if (register_type_messages === 'Phone') {
+            PhoneRegister();
+        }
+        $("#backToRegisterButton").hide();
+        $("#backToLoginButton").show();
+    }
+
+    function switchToLogInView() {
+        register_type_messages = 'Email'
+        $("#userNameInput").val('');
+        $("#passwordInput").val('');
+        $("#emailInput").hide();
+        $("#userNameInput").show();
+        $("#userPhoneInput").hide();
+        $("#passwordInput").show();
+        $("#confirmPasswordInput").hide();
+        $("#logInButton").show();
+        $("#registerButton").hide();
+        $("#backToRegisterButton").show();
+        $("#verificationCodeInput").hide();
+        $("#verifyCodeButton").hide();
+        $("#listS3ObjectsButton").hide();
+        $("#bucketNameInput").hide();
+        $("#logOutButton").hide();
+        $("#backToLoginButton").hide();
+        $("#emailRegisterButtonSelect").hide();
+        $("#phoneRegisterButtonSelect").hide();
+
+        $("#emailRegisterButtonSelect").removeClass('dp-select-button').addClass('dp-select-button');
+        $("#phoneRegisterButtonSelect").removeClass('dp-select-button');
+    }
+
+    function switchToLoggedInView() {
+        $("#emailInput").hide();
+        $("#userNameInput").hide();
+        $("#passwordInput").hide();
+        $("#confirmPasswordInput").hide();
+        $("#logInButton").hide();
+        $("#registerButton").hide();
+        $("#verificationCodeInput").hide();
+        $("#verifyCodeButton").hide();
+        $("#listS3ObjectsButton").show();
+        $("#bucketNameInput").show();
+        $("#logOutButton").show();
+        $("#backToLoginButton").hide();
+        register_type_messages = 'Email'
+    }
+
+    function clearLogs() {
+        $('#log').empty();
+    }
+
+    /*
+    Starting point for user logout flow
+    */
+    function logOut() {
+        if (cognitoUser != null) {
+
+            $("#loader").show();
+            cognitoUser.signOut();
+            switchToLogInView();
+            logMessage('Logged out!');
+            $("#loader").hide();
+            register_type_messages = 'Email'
+        }
+    }
+
+    /*
+    Starting point for user login flow with input validation
+    */
+    function logIn() {
+
+        if (!$('#userNameInput').val() || !$('#passwordInput').val()) {
+            logMessage('Please enter Username and Password!');
+            $('#dp_sounds_2')[0].play();
+
+        } else {
+            let authenticationData = {
+                Username: $('#userNameInput').val(),
+                Password: $("#passwordInput").val(),
+            };
+            let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+
+            let userData = {
+                Username: $('#userNameInput').val(),
+                Pool: userPool
+            };
+            cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+            $("#loader").show();
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: function (result) {
+                    console.log(result)
+                    logMessage(JSON.stringify(result));
+                    logMessage('Logged in!');
+                    switchToLoggedInView();
+
+                    idToken = result.getIdToken().getJwtToken();
+                    getCognitoIdentityCredentials();
+                },
+
+                onFailure: function (err) {
+                    $('#dp_sounds_2')[0].play();
+
+                    logMessage(err.message);
+                    $("#loader").hide();
+
+                },
+
+            });
+        }
+    }
+
+    /*
+    Starting point for user registration flow with input validation
+    */
+    function register() {
+        switchToRegisterView();
+
+        if (register_type_messages === 'Email') {
+            EmailRegister()
+            if (!$('#emailInput').val() || !$('#userNameInput').val() || !$('#passwordInput').val() || !$('#confirmPasswordInput').val()) {
+                logMessage('Please fill all the fields!');
+                $('#dp_sounds_2')[0].play();
+            } else {
+                if ($('#passwordInput').val() == $('#confirmPasswordInput').val()) {
+                    registerUser($('#emailInput').val(), $('#userNameInput').val(), null, $('#passwordInput').val());
+                } else {
+                    logMessage('Confirm password failed!');
+                    $('#dp_sounds_2')[0].play();
+                }
+
+            }
+        } else if (register_type_messages === 'Phone') {
+            PhoneRegister()
+            if (!$('#userNameInput').val() || !$('#passwordInput').val() || !$('#confirmPasswordInput').val() || !$('#userPhoneInput').val()) {
+                logMessage('Please fill all the fields!');
+                $('#dp_sounds_2')[0].play();
+            } else {
+                if ($('#passwordInput').val() == $('#confirmPasswordInput').val()) {
+                    registerUser(null, $('#userNameInput').val(), $('#userPhoneInput').val(), $('#passwordInput').val());
+                } else {
+                    logMessage('Confirm password failed!');
+                    $('#dp_sounds_2')[0].play();
+                }
+
+            }
+        }
+
+
+    }
+
+    if (register_type_messages === 'Email') {
+        EmailRegister();
+
+    } if (register_type_messages === 'Phone') {
+        PhoneRegister();
+    }
+
+    /*
+    Starting point for user verification using AWS Cognito with input validation
+    */
+    function verifyCode() {
+        if (!$('#verificationCodeInput').val()) {
+            logMessage('Please enter verification field!');
+        } else {
+            $("#loader").show();
+            cognitoUser.confirmRegistration($('#verificationCodeInput').val(), true, function (err, result) {
+                if (err) {
+                    logMessage(err.message);
+                    $('#dp_sounds_2')[0].play();
+                } else {
+                    logMessage(result);
+                    logMessage('Successfully verified code!');
+                    switchToLogInView();
+                    $('#verificationCodeInput').val(null)
+                }
+
+                $("#loader").hide();
+            });
+        }
+    }
+
+    /*
+    User registration using AWS Cognito
+    */
+    function registerUser(email, username, phone, password) {
+        let attributeList = [];
+
+        let dataEmail = {
+            Name : 'email',
+            Value : email
+        };
+
+        let dataPhone = {
+            Name: 'phone_number',
+            Value: phone
+        };
+
+        let attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+        let attributePhone = new AmazonCognitoIdentity.CognitoUserAttribute(dataPhone);
+
+        attributeList.push(attributeEmail);
+        attributeList.push(attributePhone);
+
+        $("#loader").show();
+        userPool.signUp(username, password, attributeList, null, function (err, result) {
+            if (err) {
+                logMessage(err.message);
+                $('#dp_sounds_2')[0].play();
+            } else {
+                cognitoUser = result.user;
+                logMessage('Registration Successful!');
+                logMessage('Username is: ' + cognitoUser.getUsername());
+                logMessage(`Please enter the verification code sent to your ${register_type_messages}.`);
+                switchToVerificationCodeView();
+            }
+            $("#loader").hide();
+        });
+    }
+
+    /*
+    Starting point for AWS List S3 Objects flow with input validation
+    */
+    function listS3Objects() {
+        if (!$('#bucketNameInput').val()) {
+            logMessage('Please enter the name of the S3 Bucket!');
+            $('#dp_sounds_2')[0].play();
+        } else {
+            $("#loader").show();
+            getAWSS3BucketObjects();
+        }
+
+    }
+
+    /*
+    This method will get temporary credentials for AWS using the IdentityPoolId and the Id Token recieved from AWS Cognito authentication provider.
+    */
+    function getCognitoIdentityCredentials() {
+        AWS.config.region = region;
+
+        let loginMap = {};
+        loginMap['cognito-idp.' + region + '.amazonaws.com/' + userPoolId] = idToken;
+
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: identityPoolId,
+            Logins: loginMap
+        });
+
+        AWS.config.credentials.clearCachedId();
+
+        AWS.config.credentials.get(function (err) {
+            if (err) {
+                logMessage(err.message);
+                $('#dp_sounds_2')[0].play();
+            } else {
+                logMessage('AWS Access Key: ' + AWS.config.credentials.accessKeyId);
+                logMessage('AWS Secret Key: ' + AWS.config.credentials.secretAccessKey);
+                logMessage('AWS Session Token: ' + AWS.config.credentials.sessionToken);
+            }
+
+            $("#loader").hide();
+        });
+    }
+
+    /*
+    This method will use AWS S3 SDK to get a list of S3 bucket object.
+    Before using this method, AWS Credentials must be set in AWS config.
+    */
+    function getAWSS3BucketObjects() {
+        let s3 = new AWS.S3();
+
+        let params = {
+            Bucket: $("#bucketNameInput").val()
+        };
+
+        s3.listObjects(params, function (err, data) {
+            if (err) {
+                logMessage(err.message)
+                $('#dp_sounds_2')[0].play();
+            }
+            else {
+                logMessage('');
+                logMessage('====== S3 Bucket Objects ======');
+                data.Contents.forEach(element => {
+                    logMessage(element.Key);
+                });
+                logMessage('');
+            }
+
+            $("#loader").hide();
+        });
+    }
+
+    /*
+    If user has logged in before, get the previous session so user doesn't need to log in again.
+    */
+    function getCurrentLoggedInSession() {
+
+        $("#loader").show();
+        userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        cognitoUser = userPool.getCurrentUser();
+
+        if (cognitoUser != null) {
+            cognitoUser.getSession(function (err, session) {
+                if (err) {
+                    logMessage(err.message);
+                    // $('#dp_sounds_2')[0].play();
+                } else {
+                    logMessage('Session found! Logged in.');
+                    switchToLoggedInView();
+                    idToken = session.getIdToken().getJwtToken();
+                    console.log(idToken);
+                    console.log(session);
+                    getCognitoIdentityCredentials();
+                    $('#dp_sounds_1')[0].play();
+                }
+                $("#loader").hide();
+            });
+        } else {
+            $("#backToLoginButton").hide();
+            logMessage('Session expired. Please log in again.');
+            $("#loader").hide();
+
+        }
+
+    }
+
+    /*
+    This is a logging method that will be used throught the application
+    */
+
+    function logMessage(message) {
+        $('#log').append(`<code class="span-log">${message}</code>`);
+        scrollbottom();
+    }
+
+    function scrollbottom() {
+        $("#log").scrollTop(1000);
+    }
+
+    function dateFunc() {
+        const date = new Date();
+        document.getElementById("date").innerHTML = date;
+    }
+
+    dateFunc();
+
+    setInterval(dateFunc, 1000);
+
+    $('#backToLoginButton').off('click').on('click', backToLoginButton);
+    $('button').off('click').on('click', btntick);
+
+    function btntick() {
+        $('#dp_sounds_3')[0].play();
+    }
+
+    function backToLoginButton() {
+        switchToLogInView();
+        register_type_messages = 'Email'
+    }
+
+    function backToRegisterButton() {
+        switchToRegisterView();
+        register_type_messages = 'Email'
+    }
+
+    $('<audio id="dp_sounds_1"><source src="sounds/confirmSound.mp3" type="audio/mpeg"/></audio>' +
+        '<audio id="dp_sounds_2"><source src="sounds/loginErrorAlert.mp3" type="audio/mpeg"/></audio>' +
+        '<audio id="dp_sounds_3"><source src="sounds/mouse_click.mp3" type="audio/mpeg"/></audio>').appendTo('body');
+
+    $('#dp_sounds_1')[0].volume = 0.1
+    $('#dp_sounds_2')[0].volume = 0.1
+    $('#dp_sounds_3')[0].volume = 0.1
+
+</script>
+</html>
